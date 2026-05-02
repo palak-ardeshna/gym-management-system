@@ -50,11 +50,7 @@ const PanelSkeleton = () => (
 );
 
 const DashboardSkeleton = () => (
-  <div className="space-y-8">
-    <div className="space-y-2">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-4 w-72" />
-    </div>
+  <>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {Array.from({ length: 3 }).map((_, i) => (
         <StatCardSkeleton key={i} />
@@ -64,7 +60,7 @@ const DashboardSkeleton = () => (
       <PanelSkeleton />
       <PanelSkeleton />
     </div>
-  </div>
+  </>
 );
 
 const StatCard = ({ title, value, icon: Icon, color, description }) => (
@@ -90,10 +86,7 @@ const Dashboard = () => {
   
   const stats = statsData?.data;
   const members = membersData?.data?.items || [];
-
-  if (isStatsLoading || isMembersLoading) {
-    return <DashboardSkeleton />;
-  }
+  const isLoading = isStatsLoading || isMembersLoading;
 
   return (
     <div className="space-y-8">
@@ -104,6 +97,7 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {isLoading ? <DashboardSkeleton /> : <>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
@@ -196,6 +190,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      </>}
     </div>
   );
 };

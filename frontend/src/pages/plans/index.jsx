@@ -30,16 +30,10 @@ const PlanCardSkeleton = () => (
 );
 
 const PlansSkeleton = () => (
-  <div className="space-y-8">
-    <div className="space-y-2">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-4 w-72" />
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <PlanCardSkeleton key={i} />
-      ))}
-    </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {Array.from({ length: 3 }).map((_, i) => (
+      <PlanCardSkeleton key={i} />
+    ))}
   </div>
 );
 
@@ -47,7 +41,6 @@ const Plans = () => {
   const { data, isLoading, error } = useGetPlansQuery();
   const plans = data?.data || [];
 
-  if (isLoading) return <PlansSkeleton />;
   if (error) return <PageError message="Failed to load plans" />;
 
   return (
@@ -57,6 +50,7 @@ const Plans = () => {
         <p className="text-slate-500 mt-1 font-medium">Choose and manage your membership tiers.</p>
       </div>
 
+      {isLoading ? <PlansSkeleton /> : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {plans.map((plan) => (
           <div 
@@ -99,6 +93,7 @@ const Plans = () => {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };
