@@ -1,14 +1,53 @@
 import React from 'react';
 import { useGetPlansQuery } from '../../redux/api/planApi';
 import { Settings, CheckCircle2 } from 'lucide-react';
-import PageLoader from '../../components/PageLoader';
 import PageError from '../../components/PageError';
+import { cn } from '../../utils/helpers';
+
+const Skeleton = ({ className }) => (
+  <div className={cn('animate-pulse rounded-md bg-slate-200', className)} />
+);
+
+const PlanCardSkeleton = () => (
+  <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+    <Skeleton className="h-7 w-32 mb-3" />
+    <Skeleton className="h-4 w-full mb-2" />
+    <Skeleton className="h-4 w-3/4 mb-6" />
+    <div className="flex items-baseline gap-2 mb-8">
+      <Skeleton className="h-10 w-24" />
+      <Skeleton className="h-4 w-20" />
+    </div>
+    <ul className="space-y-4 mb-8">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <li key={i} className="flex items-center gap-3">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <Skeleton className="h-3 flex-1" />
+        </li>
+      ))}
+    </ul>
+    <Skeleton className="h-12 w-full rounded-2xl" />
+  </div>
+);
+
+const PlansSkeleton = () => (
+  <div className="space-y-8">
+    <div className="space-y-2">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-72" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <PlanCardSkeleton key={i} />
+      ))}
+    </div>
+  </div>
+);
 
 const Plans = () => {
   const { data, isLoading, error } = useGetPlansQuery();
   const plans = data?.data || [];
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return <PlansSkeleton />;
   if (error) return <PageError message="Failed to load plans" />;
 
   return (
