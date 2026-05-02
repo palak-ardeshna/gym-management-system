@@ -54,7 +54,9 @@ export const User = sequelize.define(
       },
     },
     scopes: {
-      withPassword: {},
+      withPassword: {
+        attributes: { include: ["passwordHash"] },
+      },
     },
   }
 );

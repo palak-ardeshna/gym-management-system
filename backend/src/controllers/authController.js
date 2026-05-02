@@ -21,7 +21,7 @@ const loginSchema = Joi.object({
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = validateSchema(loginSchema, req.body);
   
-  const user = await User.unscoped().findOne({
+  const user = await User.scope("withPassword").findOne({
     where: { email },
   });
 

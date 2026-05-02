@@ -46,6 +46,7 @@ const Subscriptions = () => {
   const tableHeaders = [
     { label: 'Member' },
     { label: 'Current Plan' },
+    { label: 'Start Date' },
     { label: 'End Date' },
     { label: 'Actions', className: 'text-right' }
   ];
@@ -126,6 +127,11 @@ const Subscriptions = () => {
                 </div>
               </td>
               <td className="px-6 py-4">
+                <p className="text-sm font-bold text-slate-700">
+                  {formatDate(member.latestStartDate)}
+                </p>
+              </td>
+              <td className="px-6 py-4">
                 <p className={cn(
                   "text-sm font-bold",
                   status === 'active' ? "text-emerald-600" : "text-rose-600"
@@ -134,13 +140,34 @@ const Subscriptions = () => {
                 </p>
               </td>
               <td className="px-6 py-4 text-right">
-                <button
-                  onClick={() => handleAssignPlan(member)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
-                >
-                  <CreditCard className="h-3.5 w-3.5" />
-                  {status === 'active' ? 'Renew Plan' : 'Assign Plan'}
-                </button>
+                {(() => {
+                  const isActive = status === 'active';
+                  return (
+                    <div className="relative group/btn inline-block">
+                      <button
+                        onClick={() => !isActive && handleAssignPlan(member)}
+                        disabled={isActive}
+                        title={isActive ? `Plan is active until ${formatDate(member.latestEndDate)}` : 'Assign Plan'}
+                        className={cn(
+                          "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm",
+                          isActive
+                            ? "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
+                            : "bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                        )}
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                        {isActive ? 'Renew Plan' : 'Assign Plan'}
+                      </button>
+
+                      {isActive && (
+                        <div className="absolute bottom-full right-0 mb-2 hidden group-hover/btn:block w-48 bg-slate-900 text-white text-[10px] p-2 rounded-lg shadow-xl z-50">
+                          Plan is active until {formatDate(member.latestEndDate)}. Renewal available after this date.
+                          <div className="absolute top-full right-4 border-8 border-transparent border-t-slate-900"></div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </td>
             </tr>
           ))}

@@ -8,9 +8,9 @@ import {
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import AttendanceList from './AttendanceList';
 import AttendanceModal from './AttendanceModal';
-import { cn } from '../../utils/helpers';
+import { toast } from '../../utils/toast';
 
-import { Search, UserCheck, User, Calendar, CheckCircle2, Loader2, AlertCircle, ChevronLeft, ChevronRight, UserX, Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 const Attendance = () => {
   const [search, setSearch] = useState('');
@@ -46,7 +46,6 @@ const Attendance = () => {
 
   const [checkIn, { isLoading: isCheckingIn }] = useCheckInMutation();
   const [markAbsent, { isLoading: isMarkingAbsent }] = useMarkAbsentMutation();
-  const [message, setMessage] = useState({ type: '', text: '' });
 
   const members = membersData?.data?.items || [];
   const pagination = membersData?.data || {};
@@ -78,16 +77,11 @@ const Attendance = () => {
 
   const handleCheckIn = async (memberId, status = 'present', date = null) => {
     try {
-      // If no date is provided (direct click from list), use today's date
       const attendanceDate = date || new Date().toISOString().slice(0, 10);
       const response = await checkIn({ memberId, status, date: attendanceDate }).unwrap();
-      
-      // Use the success message from the API response
-      setMessage({ type: 'success', text: response.message || `Marked as ${status}!` });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      toast.success(response.message || `Marked as ${status}!`);
     } catch (err) {
-      setMessage({ type: 'error', text: err.data?.message || 'Check-in failed' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      toast.error(err.data?.message || 'Check-in failed');
     }
   };
 
@@ -129,16 +123,7 @@ const Attendance = () => {
         </button>
       </div>
 
-      {message.text && (
-        <div className={cn(
-          "mb-6 p-4 rounded-2xl border animate-in slide-in-from-top-4 duration-300 flex items-center gap-3 font-bold text-sm shadow-sm",
-          message.type === 'success' ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"
-        )}>
-          {message.text}
-        </div>
-      )}
-
-      <AttendanceList 
+      <AttendanceList
         search={search}
         setSearch={setSearch}
         setPage={setPage}

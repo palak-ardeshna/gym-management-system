@@ -57,10 +57,7 @@ const MemberList = ({
               placeholder="Search by name, email or phone..."
               className="block w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 text-sm outline-none transition-all"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
