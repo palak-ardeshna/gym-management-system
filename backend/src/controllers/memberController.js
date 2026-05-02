@@ -165,6 +165,7 @@ export const listMembers = asyncHandler(async (req, res) => {
          m.created_at AS "createdAt",
          m.updated_at AS "updatedAt",
          ms.latest_end_date AS "latestEndDate",
+         ms.last_start_date AS "latestStartDate",
          ms.last_plan_name AS "planName",
          ms.last_plan_id AS "planId",
          CASE

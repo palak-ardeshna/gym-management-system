@@ -75,9 +75,28 @@ const Attendance = () => {
     return map;
   }, [attendances]);
 
+  const validateAttendanceDate = (memberId, attendanceDate) => {
+    const member = members.find((m) => String(m.id) === String(memberId));
+    if (!member) return 'Member not found in current list.';
+    if (!member.latestStartDate || !member.latestEndDate) {
+      return `${member.fullName} has no active subscription. Assign a plan first.`;
+    }
+    const start = member.latestStartDate.slice(0, 10);
+    const end = member.latestEndDate.slice(0, 10);
+    if (attendanceDate < start || attendanceDate > end) {
+      return `Attendance date must be between ${start} and ${end} (${member.fullName}'s subscription period).`;
+    }
+    return null;
+  };
+
   const handleCheckIn = async (memberId, status = 'present', date = null) => {
+    const attendanceDate = date || new Date().toISOString().slice(0, 10);
+    const validationError = validateAttendanceDate(memberId, attendanceDate);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
     try {
-      const attendanceDate = date || new Date().toISOString().slice(0, 10);
       const response = await checkIn({ memberId, status, date: attendanceDate }).unwrap();
       toast.success(response.message || `Marked as ${status}!`);
     } catch (err) {

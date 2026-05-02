@@ -1,22 +1,36 @@
 import React from 'react';
-import { CheckCircle2, UserX, Loader2, UserCheck } from 'lucide-react';
+import { CheckCircle2, UserX, Loader2, UserCheck, AlertTriangle } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import Modal from '../../components/Modal';
 
-const AttendanceModal = ({ 
-  isOpen, 
-  onClose, 
-  selectedDate, 
-  setSelectedDate, 
-  selectedMemberId, 
-  setSelectedMemberId, 
-  attendanceStatus, 
-  setAttendanceStatus, 
-  onSubmit, 
-  members, 
+const AttendanceModal = ({
+  isOpen,
+  onClose,
+  selectedDate,
+  setSelectedDate,
+  selectedMemberId,
+  setSelectedMemberId,
+  attendanceStatus,
+  setAttendanceStatus,
+  onSubmit,
+  members,
   isCheckingIn,
   modalAttendanceMap
 }) => {
+  const selectedMember = members.find((m) => String(m.id) === String(selectedMemberId));
+  let subscriptionError = null;
+  if (selectedMember) {
+    if (!selectedMember.latestStartDate || !selectedMember.latestEndDate) {
+      subscriptionError = `${selectedMember.fullName} has no active subscription. Assign a plan first.`;
+    } else {
+      const start = selectedMember.latestStartDate.slice(0, 10);
+      const end = selectedMember.latestEndDate.slice(0, 10);
+      if (selectedDate < start || selectedDate > end) {
+        subscriptionError = `Attendance date must be within subscription (${start} to ${end}).`;
+      }
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -94,9 +108,16 @@ const AttendanceModal = ({
           </div>
         </div>
 
+        {subscriptionError && (
+          <div className="flex items-start gap-2 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium">
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{subscriptionError}</span>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isCheckingIn || !selectedMemberId}
+          disabled={isCheckingIn || !selectedMemberId || !!subscriptionError}
           className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {isCheckingIn ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
