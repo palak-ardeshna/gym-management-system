@@ -7,12 +7,12 @@ export const sequelize = new Sequelize(env.dbName, env.dbUser, env.dbPassword, {
   port: env.dbPort,
   dialect: "postgres",
   dialectModule: pg,
-  dialectOptions: {
+  dialectOptions: env.nodeEnv === "production" ? {
     ssl: {
       require: true,
       rejectUnauthorized: false,
     },
-  },
+  } : {},
   logging: false,
 });
 
