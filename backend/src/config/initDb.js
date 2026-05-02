@@ -6,69 +6,64 @@ import { Plan } from "../models/planModel.js";
 import { Member } from "../models/memberModel.js";
 import { setupAssociations } from "../models/index.js";
 
-let isInitialized = false;
+let initPromise = null;
 
-export const initializeDatabase = async () => {
-  if (isInitialized) {
-    return;
+// Heavy setup (sync schema + seed defaults) runs in dev for convenience.
+// In production it only runs when DB_FORCE_INIT=true (first deploy / migration).
+const shouldRunSetup = () => env.nodeEnv !== "production" || env.dbForceInit;
+
+export const initializeDatabase = () => {
+  if (!initPromise) {
+    initPromise = doInit().catch((err) => {
+      initPromise = null;
+      throw err;
+    });
   }
+  return initPromise;
+};
 
+const doInit = async () => {
   setupAssociations();
   await connectDatabase();
+
+  if (!shouldRunSetup()) return;
+
   await sequelize.sync({ alter: true });
+  await ensureAdmin();
+  await ensureDefaultPlans();
+  await ensureSeedMembers();
+};
 
-  // Create default admin
-  const existingAdmin = await User.scope("withPassword").findOne({
-    where: { email: env.adminEmail },
+const ensureAdmin = async () => {
+  const existing = await User.findOne({ where: { email: env.adminEmail } });
+  if (existing) return;
+
+  const passwordHash = await bcrypt.hash(env.adminPassword, 10);
+  await User.create({
+    name: env.adminName,
+    email: env.adminEmail,
+    passwordHash,
+    role: "admin",
   });
+  console.log(`Default admin created: ${env.adminEmail}`);
+};
 
-  if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash(env.adminPassword, 10);
-
-    await User.create({
-      name: env.adminName,
-      email: env.adminEmail,
-      passwordHash,
-      role: "admin",
-    });
-
-    console.log(`Default admin created with email: ${env.adminEmail}`);
-  }
-
-  // Create default plans
+const ensureDefaultPlans = async () => {
   const defaultPlans = [
-    {
-      name: "Monthly",
-      price: 1000,
-      durationInMonths: 1,
-      description: "Basic monthly gym membership",
-    },
-    {
-      name: "Quarterly",
-      price: 2500,
-      durationInMonths: 3,
-      description: "Best for short-term goals",
-    },
-    {
-      name: "Yearly",
-      price: 8000,
-      durationInMonths: 12,
-      description: "Full year commitment for best results",
-    },
+    { name: "Monthly", price: 1000, durationInMonths: 1, description: "Basic monthly gym membership" },
+    { name: "Quarterly", price: 2500, durationInMonths: 3, description: "Best for short-term goals" },
+    { name: "Yearly", price: 8000, durationInMonths: 12, description: "Full year commitment for best results" },
   ];
 
-  for (const planData of defaultPlans) {
-    const [plan, created] = await Plan.findOrCreate({
-      where: { name: planData.name },
-      defaults: planData,
-    });
+  const existingNames = (await Plan.findAll({ attributes: ["name"] })).map((p) => p.name);
+  const missing = defaultPlans.filter((p) => !existingNames.includes(p.name));
+  if (missing.length === 0) return;
 
-    if (created) {
-      console.log(`Default plan created: ${planData.name}`);
-    }
-  }
+  await Plan.bulkCreate(missing);
+  console.log(`Default plans created: ${missing.map((p) => p.name).join(", ")}`);
+};
 
-  // Create seed members
+const ensureSeedMembers = async () => {
   const seedMembers = [
     { fullName: "Rajesh Patel", email: "rajesh@example.com", phone: "9876543210", age: 25, gender: "male", address: "Ahmedabad" },
     { fullName: "Sneha Sharma", email: "sneha@example.com", phone: "9876543211", age: 22, gender: "female", address: "Surat" },
@@ -92,13 +87,12 @@ export const initializeDatabase = async () => {
     { fullName: "Smriti Mandhana", email: "smriti@example.com", phone: "9876543229", age: 25, gender: "female", address: "Navsari" },
   ];
 
-  for (const memberData of seedMembers) {
-    await Member.findOrCreate({
-      where: { email: memberData.email },
-      defaults: memberData,
-    });
-  }
-  console.log("Seed members check/creation completed");
+  const existingEmails = new Set(
+    (await Member.findAll({ attributes: ["email"], where: { email: seedMembers.map((m) => m.email) } })).map((m) => m.email)
+  );
+  const missing = seedMembers.filter((m) => !existingEmails.has(m.email));
+  if (missing.length === 0) return;
 
-  isInitialized = true;
+  await Member.bulkCreate(missing);
+  console.log(`Seed members created: ${missing.length}`);
 };

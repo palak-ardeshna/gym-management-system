@@ -15,4 +15,5 @@ export const env = {
   adminName: process.env.ADMIN_NAME || "Admin",
   adminEmail: process.env.ADMIN_EMAIL || "admin@gym.com",
   adminPassword: process.env.ADMIN_PASSWORD || "admin123",
+  dbForceInit: process.env.DB_FORCE_INIT === "true",
 };

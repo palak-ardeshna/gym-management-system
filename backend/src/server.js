@@ -7,8 +7,14 @@ import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 
 const app = express();
 
-app.use(cors());
+// maxAge tells browsers to cache the OPTIONS preflight result for 24h,
+// so subsequent same-origin API calls skip the extra round trip.
+app.use(cors({ origin: true, maxAge: 86400 }));
 app.use(express.json());
+
+// Cheap endpoints that don't need DB — safe targets for uptime/warmup pings.
+app.get("/", (req, res) => res.send("Server is running"));
+app.get("/health", (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 let initPromise = null;
 const ensureInitialized = () => {
@@ -21,7 +27,8 @@ const ensureInitialized = () => {
   return initPromise;
 };
 
-app.use(async (req, res, next) => {
+// DB init is gated to /api so /health stays instant even on cold start.
+app.use("/api", async (req, res, next) => {
   try {
     await ensureInitialized();
     next();
@@ -29,11 +36,6 @@ app.use(async (req, res, next) => {
     next(err);
   }
 });
-
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
-
 app.use("/api", apiRoutes);
 
 app.use((req, res) => {
