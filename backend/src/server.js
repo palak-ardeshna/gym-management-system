@@ -10,6 +10,26 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+let initPromise = null;
+const ensureInitialized = () => {
+  if (!initPromise) {
+    initPromise = initializeDatabase().catch((err) => {
+      initPromise = null;
+      throw err;
+    });
+  }
+  return initPromise;
+};
+
+app.use(async (req, res, next) => {
+  try {
+    await ensureInitialized();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
@@ -25,19 +45,17 @@ app.use((req, res) => {
 
 app.use(errorMiddleware);
 
-const startServer = async () => {
-  try {
-    await initializeDatabase();
-
-    app.listen(env.port, () => {
-      console.log(`Server is running on port ${env.port}`);
+if (env.nodeEnv !== "production") {
+  ensureInitialized()
+    .then(() => {
+      app.listen(env.port, () => {
+        console.log(`Server is running on port ${env.port}`);
+      });
+    })
+    .catch((error) => {
+      console.error("Failed to start server:", error);
+      process.exit(1);
     });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-};
-
-startServer();
+}
 
 export default app;
