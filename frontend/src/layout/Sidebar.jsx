@@ -45,7 +45,7 @@ const Sidebar = () => {
         <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center">
           <Dumbbell className="h-6 w-6 text-white" />
         </div>
-        <span className="text-xl font-bold text-slate-900 tracking-tight">IronTemple</span>
+        <span className="text-xl font-bold text-slate-900 tracking-tight">Argon</span>
       </div>
 
       <nav className="flex-1 px-4 space-y-2 mt-4">

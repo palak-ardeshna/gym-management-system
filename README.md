@@ -1,4 +1,4 @@
-# 🏋️‍♂️ Gym Management System (IronTemple)
+# 🏋️‍♂️ Gym Management System (Argon)
 
 A comprehensive Gym Management System with a robust Backend (Node.js, Express, PostgreSQL) and a modern Frontend (React, Tailwind CSS, Redux Toolkit).
 
@@ -91,4 +91,4 @@ To deploy the database on Railway:
 4. Ensure `SSL` is enabled in Sequelize config for production.
 
 ---
-Developed with ❤️ by IronTemple Team.
+Developed with ❤️ by Argon Team.
