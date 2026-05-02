@@ -17,7 +17,16 @@ const planSchema = z.object({
   path: ["endDate"],
 });
 
-const PlanModal = ({ isOpen, onClose, memberId, memberName }) => {
+const computeDefaultStartDate = (currentEndDate) => {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!currentEndDate) return today;
+  if (currentEndDate < today) return today;
+  const next = new Date(currentEndDate);
+  next.setDate(next.getDate() + 1);
+  return next.toISOString().slice(0, 10);
+};
+
+const PlanModal = ({ isOpen, onClose, memberId, memberName, currentEndDate, isRenewal }) => {
   const [assignPlan, { isLoading }] = useAssignPlanMutation();
   const { data: plansData } = useGetPlansQuery();
   const plans = plansData?.data || [];
@@ -35,7 +44,7 @@ const PlanModal = ({ isOpen, onClose, memberId, memberName }) => {
       memberId: memberId,
       planId: 0,
       planName: '',
-      startDate: new Date().toISOString().slice(0, 10),
+      startDate: computeDefaultStartDate(currentEndDate),
       endDate: '',
     }
   });
@@ -60,12 +69,13 @@ const PlanModal = ({ isOpen, onClose, memberId, memberName }) => {
     if (isOpen) {
       reset({
         memberId: memberId,
+        planId: 0,
         planName: '',
-        startDate: new Date().toISOString().slice(0, 10),
+        startDate: computeDefaultStartDate(currentEndDate),
         endDate: '',
       });
     }
-  }, [isOpen, memberId, reset]);
+  }, [isOpen, memberId, currentEndDate, reset]);
 
   if (!isOpen) return null;
 
@@ -82,11 +92,19 @@ const PlanModal = ({ isOpen, onClose, memberId, memberName }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Assign Plan"
+      title={isRenewal ? "Renew Plan" : "Assign Plan"}
       className="max-w-md"
     >
       <div className="mb-6 -mt-2">
-        <p className="text-xs text-slate-500 font-medium">Assigning to: <span className="text-indigo-600 font-bold">{memberName}</span></p>
+        <p className="text-xs text-slate-500 font-medium">
+          {isRenewal ? 'Renewing for: ' : 'Assigning to: '}
+          <span className="text-indigo-600 font-bold">{memberName}</span>
+        </p>
+        {isRenewal && currentEndDate && (
+          <p className="text-[11px] text-slate-400 mt-1">
+            Current plan ends on <span className="font-bold text-slate-600">{currentEndDate}</span>. New subscription will start the next day.
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -143,7 +161,7 @@ const PlanModal = ({ isOpen, onClose, memberId, memberName }) => {
           ) : (
             <>
               <Save className="h-5 w-5" />
-              Confirm Assignment
+              {isRenewal ? 'Confirm Renewal' : 'Confirm Assignment'}
             </>
           )}
         </button>
