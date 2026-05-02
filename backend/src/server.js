@@ -2,8 +2,8 @@ import cors from "cors";
 import express from "express";
 import { env } from "./config/env.js";
 import { initializeDatabase } from "./config/initDb.js";
-import apiRoutes from "./route/index.js";
-import { errorMiddleware } from "./middleware/errorMiddleware.js";
+import apiRoutes from "./routes/index.js";
+import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 
 const app = express();
 

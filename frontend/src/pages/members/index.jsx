@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useGetMembersQuery, useDeleteMemberMutation, useAddMemberMutation, useUpdateMemberMutation } from '../../redux/apiSlice';
+import {
+  useGetMembersQuery,
+  useDeleteMemberMutation,
+  useAddMemberMutation,
+  useUpdateMemberMutation,
+} from '../../redux/api/memberApi';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import MemberList from './MemberList';
 import MemberModal from './MemberModal';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -8,23 +14,17 @@ import PlanModal from '../../components/PlanModal';
 const Members = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberToDelete, setMemberToDelete] = useState(null);
   const [memberForPlan, setMemberForPlan] = useState(null);
-  
-  // Debounce search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1); // Reset to page 1 on search
-    }, 500);
 
-    return () => clearTimeout(handler);
-  }, [search]);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const { data, isLoading, isFetching } = useGetMembersQuery({ 
     page, 

@@ -1,13 +1,14 @@
 import Joi from "joi";
 import { Op, QueryTypes } from "sequelize";
-import { sequelize, Subscription, Member, Plan } from "../model/index.js";
+import { sequelize, Subscription, Member, Plan } from "../models/index.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { notFound, badRequest } from "../utils/httpError.js";
 import { getPaginationParams, getPaginatedResponse } from "../utils/pagination.js";
-import { ApiError } from "../utils/apiError.js";
+import { validateSchema } from "../utils/validate.js";
+import { memberStatusCTE } from "../utils/memberStatusCTE.js";
+import { getTodayDate } from "../utils/date.js";
 
-const getTodayDate = () => new Date().toISOString().slice(0, 10);
 const toPlainSubscription = (subscription) =>
   subscription ? subscription.get({ plain: true }) : null;
 
@@ -33,51 +34,6 @@ const listStatusQuerySchema = Joi.object({
   search: Joi.string().trim().allow("").optional(),
   all: Joi.string().valid("true", "false").optional(),
 });
-
-const validateSchema = (schema, value) => {
-  const { error, value: validatedValue } = schema.validate(value, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true,
-  });
-
-  if (error) {
-    throw new ApiError(
-      400,
-      error.details[0]?.message || "Validation failed",
-      error.details.map((detail) => ({
-        message: detail.message,
-        path: detail.path,
-      }))
-    );
-  }
-
-  return validatedValue;
-};
-
-const memberStatusCTE = `
-  WITH latest_subs AS (
-    SELECT DISTINCT ON (member_id) 
-      member_id, 
-      plan_id,
-      plan_name, 
-      end_date, 
-      start_date
-    FROM subscriptions
-    ORDER BY member_id, end_date DESC, created_at DESC
-  ),
-  member_status AS (
-    SELECT
-      m.id AS member_id,
-      COALESCE(BOOL_OR(CURRENT_DATE BETWEEN s.start_date AND s.end_date), FALSE) AS is_active,
-      MAX(s.end_date) AS latest_end_date,
-      (SELECT plan_name FROM latest_subs ls WHERE ls.member_id = m.id) AS last_plan_name,
-      (SELECT plan_id FROM latest_subs ls WHERE ls.member_id = m.id) AS last_plan_id
-    FROM members m
-    LEFT JOIN subscriptions s ON s.member_id = m.id
-    GROUP BY m.id
-  )
-`;
 
 export const assignPlan = asyncHandler(async (req, res) => {
   const validatedBody = validateSchema(assignPlanSchema, req.body);

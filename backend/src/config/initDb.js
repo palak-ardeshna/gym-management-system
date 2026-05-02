@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import { connectDatabase, sequelize } from "./db.js";
 import { env } from "./env.js";
-import { User } from "../model/userModel.js";
-import { Plan } from "../model/planModel.js";
-import { Member } from "../model/memberModel.js";
-import { setupAssociations } from "../model/index.js";
+import { User } from "../models/userModel.js";
+import { Plan } from "../models/planModel.js";
+import { Member } from "../models/memberModel.js";
+import { setupAssociations } from "../models/index.js";
 
 let isInitialized = false;
 

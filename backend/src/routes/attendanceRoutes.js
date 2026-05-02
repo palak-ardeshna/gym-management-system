@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { checkInMember, getAttendanceReport, markAbsent } from "../controller/attendanceController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { checkInMember, getAttendanceReport, markAbsent } from "../controllers/attendanceController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 

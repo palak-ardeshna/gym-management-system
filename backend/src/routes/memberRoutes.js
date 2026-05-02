@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { addMember, editMember, listMembers, removeMember, getMember } from "../controller/memberController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { addMember, editMember, listMembers, removeMember, getMember } from "../controllers/memberController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 

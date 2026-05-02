@@ -1,5 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useGetMembersQuery, useCheckInMutation, useMarkAbsentMutation, useGetAttendanceReportQuery } from '../../redux/apiSlice';
+import { useGetMembersQuery } from '../../redux/api/memberApi';
+import {
+  useCheckInMutation,
+  useMarkAbsentMutation,
+  useGetAttendanceReportQuery,
+} from '../../redux/api/attendanceApi';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import AttendanceList from './AttendanceList';
 import AttendanceModal from './AttendanceModal';
 import { cn } from '../../utils/helpers';
@@ -8,23 +14,17 @@ import { Search, UserCheck, User, Calendar, CheckCircle2, Loader2, AlertCircle, 
 
 const Attendance = () => {
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 500);
   const [page, setPage] = useState(1);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState('');
   const [attendanceStatus, setAttendanceStatus] = useState('present');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
-  
-  // Debounce search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 500);
 
-    return () => clearTimeout(handler);
-  }, [search]);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();

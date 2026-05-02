@@ -1,5 +1,5 @@
 import { QueryTypes } from "sequelize";
-import { sequelize, Member, Attendance } from "../model/index.js";
+import { sequelize, Member, Attendance } from "../models/index.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 

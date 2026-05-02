@@ -1,30 +1,15 @@
 import React from 'react';
-import { useGetPlansQuery } from '../../redux/apiSlice';
-import { Settings, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
-import { cn } from '../../utils/helpers';
+import { useGetPlansQuery } from '../../redux/api/planApi';
+import { Settings, CheckCircle2 } from 'lucide-react';
+import PageLoader from '../../components/PageLoader';
+import PageError from '../../components/PageError';
 
 const Plans = () => {
   const { data, isLoading, error } = useGetPlansQuery();
   const plans = data?.data || [];
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-        <div className="bg-rose-50 p-6 rounded-2xl flex items-center gap-4 text-rose-700">
-          <AlertCircle className="h-6 w-6" />
-          <p className="font-bold">Failed to load plans</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
+  if (error) return <PageError message="Failed to load plans" />;
 
   return (
     <div className="space-y-8">

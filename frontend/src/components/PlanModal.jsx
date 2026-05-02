@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Save, Loader2, Calendar, CreditCard } from 'lucide-react';
-import { useAssignPlanMutation, useGetPlansQuery } from '../redux/apiSlice';
+import { useAssignPlanMutation } from '../redux/api/subscriptionApi';
+import { useGetPlansQuery } from '../redux/api/planApi';
 import Modal from './Modal';
 
 const planSchema = z.object({

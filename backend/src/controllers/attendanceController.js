@@ -1,18 +1,12 @@
 import Joi from "joi";
 import { Op } from "sequelize";
-import { Attendance, Member } from "../model/index.js";
+import { Attendance, Member } from "../models/index.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { notFound, conflict } from "../utils/httpError.js";
-import { ApiError } from "../utils/apiError.js";
+import { notFound } from "../utils/httpError.js";
+import { validateSchema } from "../utils/validate.js";
+import { getTodayDate } from "../utils/date.js";
 
-const getTodayDate = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 const toPlainAttendance = (attendance) => (attendance ? attendance.get({ plain: true }) : null);
 
 // Validation Schemas
@@ -22,31 +16,14 @@ const checkInSchema = Joi.object({
   date: Joi.date().iso().optional(),
 });
 
+const markAbsentSchema = Joi.object({
+  memberId: Joi.number().integer().min(1).required(),
+});
+
 const reportQuerySchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).required(),
   year: Joi.number().integer().min(2000).max(2100).required(),
 });
-
-const validateSchema = (schema, value) => {
-  const { error, value: validatedValue } = schema.validate(value, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true,
-  });
-
-  if (error) {
-    throw new ApiError(
-      400,
-      error.details[0]?.message || "Validation failed",
-      error.details.map((detail) => ({
-        message: detail.message,
-        path: detail.path,
-      }))
-    );
-  }
-
-  return validatedValue;
-};
 
 export const checkInMember = asyncHandler(async (req, res) => {
   const { memberId, status = "present", date } = validateSchema(checkInSchema, req.body);
@@ -95,7 +72,7 @@ export const checkInMember = asyncHandler(async (req, res) => {
 });
 
 export const markAbsent = asyncHandler(async (req, res) => {
-  const { memberId } = validateSchema(checkInSchema, req.body);
+  const { memberId } = validateSchema(markAbsentSchema, req.body);
 
   const member = await Member.findByPk(memberId);
   if (!member) {

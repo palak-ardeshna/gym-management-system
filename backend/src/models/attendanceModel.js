@@ -18,12 +18,6 @@ export const Attendance = sequelize.define(
         key: "id",
       },
     },
-    checkInAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      field: "check_in_at",
-    },
     checkInDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,

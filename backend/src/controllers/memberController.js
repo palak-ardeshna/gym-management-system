@@ -1,11 +1,12 @@
 import Joi from "joi";
-import { Op, QueryTypes } from "sequelize";
-import { sequelize, Member, Subscription, Attendance, Plan } from "../model/index.js";
+import { QueryTypes } from "sequelize";
+import { sequelize, Member, Subscription, Plan } from "../models/index.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { notFound, conflict, badRequest } from "../utils/httpError.js";
+import { notFound, conflict } from "../utils/httpError.js";
 import { getPaginationParams, getPaginatedResponse } from "../utils/pagination.js";
-import { ApiError } from "../utils/apiError.js";
+import { validateSchema } from "../utils/validate.js";
+import { memberStatusCTE } from "../utils/memberStatusCTE.js";
 
 const toPlainMember = (member) => (member ? member.get({ plain: true }) : null);
 
@@ -42,27 +43,6 @@ const memberUpdateSchema = Joi.object({
 const memberIdSchema = Joi.object({
   id: Joi.number().integer().min(1).required(),
 });
-
-const validateSchema = (schema, value) => {
-  const { error, value: validatedValue } = schema.validate(value, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true,
-  });
-
-  if (error) {
-    throw new ApiError(
-      400,
-      error.details[0]?.message || "Validation failed",
-      error.details.map((detail) => ({
-        message: detail.message,
-        path: detail.path,
-      }))
-    );
-  }
-
-  return validatedValue;
-};
 
 export const addMember = asyncHandler(async (req, res) => {
   const validatedBody = validateSchema(memberCreateSchema, req.body);
@@ -170,30 +150,6 @@ export const listMembers = asyncHandler(async (req, res) => {
   const { page, limit, offset, isFetchAll, queryLimit } = getPaginationParams(req.query);
 
   const search = searchRaw ? `%${searchRaw.trim()}%` : null;
-
-  const memberStatusCTE = `
-    WITH latest_subs AS (
-      SELECT DISTINCT ON (member_id) 
-        member_id, 
-        plan_id,
-        plan_name, 
-        end_date, 
-        start_date
-      FROM subscriptions
-      ORDER BY member_id, end_date DESC, created_at DESC
-    ),
-    member_status AS (
-      SELECT
-        m.id AS member_id,
-        COALESCE(BOOL_OR(CURRENT_DATE BETWEEN s.start_date AND s.end_date), FALSE) AS is_active,
-        MAX(s.end_date) AS latest_end_date,
-        (SELECT plan_name FROM latest_subs ls WHERE ls.member_id = m.id) AS last_plan_name,
-        (SELECT plan_id FROM latest_subs ls WHERE ls.member_id = m.id) AS last_plan_id
-      FROM members m
-      LEFT JOIN subscriptions s ON s.member_id = m.id
-      GROUP BY m.id
-    )
-  `;
 
   const [members, totalResult] = await Promise.all([
     sequelize.query(

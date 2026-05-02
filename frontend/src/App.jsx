@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Login from './pages/Login';
+import Login from './pages/login';
 import Dashboard from './pages/dashboard';
 import MemberList from './pages/members';
 import Attendance from './pages/attendance';

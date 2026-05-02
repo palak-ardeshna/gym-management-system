@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="py-6 px-8 border-t border-slate-200 bg-white ml-64">
+    <footer className="py-6 px-8 border-t border-slate-200 bg-white">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-sm text-slate-500 font-medium">
           © {new Date().getFullYear()} Argon Gym. All rights reserved.

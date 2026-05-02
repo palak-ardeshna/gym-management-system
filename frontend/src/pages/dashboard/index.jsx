@@ -1,7 +1,9 @@
 import React from 'react';
-import { useGetDashboardStatsQuery, useGetMembersQuery } from '../../redux/apiSlice';
-import { Users, UserCheck, UserX, Activity, TrendingUp, ArrowUpRight, User as UserIcon } from 'lucide-react';
+import { useGetDashboardStatsQuery } from '../../redux/api/dashboardApi';
+import { useGetMembersQuery } from '../../redux/api/memberApi';
+import { Users, UserCheck, UserX, Activity, ArrowUpRight, User as UserIcon } from 'lucide-react';
 import { cn, formatDate } from '../../utils/helpers';
+import PageLoader from '../../components/PageLoader';
 
 const StatCard = ({ title, value, icon: Icon, color, description }) => (
   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -14,11 +16,7 @@ const StatCard = ({ title, value, icon: Icon, color, description }) => (
         <Icon className="h-6 w-6 text-white" />
       </div>
     </div>
-    <div className="mt-4 flex items-center gap-2">
-      <div className="flex items-center text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg text-xs font-bold">
-        <TrendingUp className="h-3 w-3 mr-1" />
-        +12%
-      </div>
+    <div className="mt-4">
       <p className="text-xs text-slate-400 font-medium">{description}</p>
     </div>
   </div>
@@ -32,11 +30,7 @@ const Dashboard = () => {
   const members = membersData?.data?.items || [];
 
   if (isStatsLoading || isMembersLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

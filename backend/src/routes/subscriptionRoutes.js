@@ -3,8 +3,8 @@ import {
   assignPlan,
   getMemberStatus,
   listMembersByStatus,
-} from "../controller/subscriptionController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+} from "../controllers/subscriptionController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 

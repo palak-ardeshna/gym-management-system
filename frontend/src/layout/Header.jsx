@@ -6,7 +6,7 @@ const Header = () => {
   const { user } = useSelector((state) => state.auth);
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 ml-64">
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
       <div className="flex items-center gap-4">
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
           Gym Management System

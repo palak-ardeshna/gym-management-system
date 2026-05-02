@@ -1,4 +1,4 @@
-import { Plan } from "../model/index.js";
+import { Plan } from "../models/index.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 

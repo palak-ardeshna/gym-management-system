@@ -40,7 +40,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full z-20">
+    <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen z-20">
       <div className="p-6 flex items-center gap-3">
         <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center">
           <Dumbbell className="h-6 w-6 text-white" />

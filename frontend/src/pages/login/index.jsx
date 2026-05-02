@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation } from '../redux/apiSlice';
-import { setCredentials } from '../redux/slices/authSlice';
+import { useLoginMutation } from '../../redux/api/authApi';
+import { setCredentials } from '../../redux/slices/authSlice';
 import { LogIn, Mail, Lock, Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({

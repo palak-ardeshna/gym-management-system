@@ -1,12 +1,11 @@
-import { ApiError } from "../utils/apiError.js";
 import { verifyToken } from "../utils/jwt.js";
-import { forbidden } from "../utils/httpError.js";
+import { unauthorized, forbidden } from "../utils/httpError.js";
 
 export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new ApiError(401, "Authorization token is required"));
+    return next(unauthorized("Authorization token is required"));
   }
 
   const token = authHeader.split(" ")[1];
@@ -15,7 +14,7 @@ export const authMiddleware = (req, res, next) => {
     req.user = verifyToken(token);
     next();
   } catch (error) {
-    next(new ApiError(401, "Invalid or expired token"));
+    next(unauthorized("Invalid or expired token"));
   }
 };
 

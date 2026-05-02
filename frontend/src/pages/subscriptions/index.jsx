@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useGetMembersByStatusQuery } from '../../redux/apiSlice';
-import { 
-  Search, 
-  UserCheck, 
-  UserX, 
+import { useGetMembersByStatusQuery } from '../../redux/api/subscriptionApi';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import {
+  Search,
+  UserCheck,
+  UserX,
   CreditCard,
-  ChevronLeft, 
+  ChevronLeft,
   ChevronRight,
   User,
   Filter
@@ -18,20 +19,14 @@ import Pagination from '../../components/Pagination';
 const Subscriptions = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 500);
   const [status, setStatus] = useState('active');
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  
-  // Debounce search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 500);
 
-    return () => clearTimeout(handler);
-  }, [search]);
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const { data, isLoading, isFetching } = useGetMembersByStatusQuery({ 
     page, 
