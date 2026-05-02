@@ -1,94 +1,179 @@
-# 🏋️‍♂️ Gym Management System (Argon)
+# 🏋️‍♂️ Argon — Gym Management System
 
-A comprehensive Gym Management System with a robust Backend (Node.js, Express, PostgreSQL) and a modern Frontend (React, Tailwind CSS, Redux Toolkit).
+A full-stack gym management app: Node.js + Express + Sequelize backend, React + Vite + Redux Toolkit frontend, PostgreSQL database.
 
-## 🚀 Key Features
+## 🚀 Features
 
 ### 👤 Member Management
-- Add, update, and delete members.
-- Paginated member list with search functionality.
-- Form validation (10-digit phone, valid email).
-- Automatic status tracking (Active/Expired/No Subscription).
+- Add, update, delete members
+- Paginated list with debounced search
+- Form validation (10-digit phone, email)
+- Per-member subscription status (Active / Expired / Upcoming / No Subscription)
 
-### 📅 Attendance System
-- Daily check-in/check-out for members.
-- Prevent duplicate check-ins for the same day.
-- Detailed monthly attendance reports with grid view.
-- Real-time success messages with date-specific info.
+### 📅 Attendance
+- Daily check-in / mark absent
+- Duplicate-check-in protection (one record per member per day)
+- Monthly grid report
+- Toast notifications for actions
 
-### 💳 Subscription & Plans
-- Create and manage gym plans.
-- Assign plans to members with custom start and end dates.
-- Automatic expiration tracking based on dates.
+### 💳 Subscriptions & Plans
+- Manage plans (Monthly / Quarterly / Yearly seeded by default)
+- Assign plan to a member with start & end dates
+- Renewal creates a **new subscription record** rather than overwriting the old one
+- Renew/Assign disabled while a member's plan is still active
 
 ### 📊 Dashboard
-- Real-time statistics (Total Members, Active, Expired).
-- Live "Recent Activity" feed showing latest attendance logs.
-- "Latest Members" list for quick access.
+- Total / Active / Expired member counts
+- Recent attendance activity feed
+- Latest members snapshot
 
-### 🔐 Security
-- JWT-based Authentication.
-- Protected API routes via Middleware.
-- Secure password handling.
+### 🔐 Auth
+- JWT login
+- Protected API routes via auth middleware
+- Default admin auto-created on first run (`admin@gym.com` / `admin123`)
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, Redux Toolkit (RTK Query), Tailwind CSS, Lucide React (Icons).
-- **Backend**: Node.js, Express.js, Sequelize ORM.
-- **Database**: PostgreSQL.
-- **Validation**: Joi (Backend), React Hook Form + Zod (Frontend).
+- **Frontend**: React 19, Vite, Redux Toolkit + RTK Query (split per feature via `injectEndpoints`), Tailwind v4, react-hook-form + Zod, lucide-react, toastify-js
+- **Backend**: Node.js (ESM), Express 5, Sequelize, Joi, JWT, bcryptjs
+- **Database**: PostgreSQL
+- **Deploy**: Vercel (frontend + serverless backend), Railway (Postgres)
 
 ## 📁 Project Structure
 
 ```text
-├── backend/
-│   ├── src/
-│   │   ├── config/       # Database & Env config
-│   │   ├── controller/   # API Logic
-│   │   ├── middleware/   # Auth & Error handlers
-│   │   ├── model/        # Sequelize Models
-│   │   ├── route/        # Express Routes
-│   │   └── utils/        # Helpers & JWT
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable UI components (Table, Modal, etc.)
-│   │   ├── pages/        # Feature-based pages (Attendance, Members, etc.)
-│   │   ├── redux/        # API Slices & Store
-│   │   └── utils/        # Helpers & Constants
+backend/
+└── src/
+    ├── config/         # env, db, initDb (idempotent seed + sync)
+    ├── controllers/    # auth, member, attendance, subscription, plan, dashboard
+    ├── middlewares/    # auth, error
+    ├── models/         # Sequelize models + associations
+    ├── routes/         # Express routers, mounted under /api
+    ├── utils/          # validate, memberStatusCTE, date, jwt, pagination, etc.
+    └── server.js       # app entry; lazy DB-init middleware
+
+frontend/
+└── src/
+    ├── components/     # Modal, ConfirmModal, PlanModal, Table, Pagination, PageLoader, PageError
+    ├── hooks/          # useDebouncedValue
+    ├── layout/         # Layout, Header, Sidebar, Footer
+    ├── pages/
+    │   ├── login/
+    │   ├── dashboard/
+    │   ├── members/
+    │   ├── attendance/
+    │   ├── plans/
+    │   └── subscriptions/
+    ├── redux/
+    │   ├── apiSlice.js         # base RTK Query slice (no endpoints)
+    │   ├── store.js
+    │   ├── slices/authSlice.js
+    │   └── api/                # injectEndpoints per feature
+    │       ├── authApi.js
+    │       ├── memberApi.js
+    │       ├── planApi.js
+    │       ├── dashboardApi.js
+    │       ├── attendanceApi.js
+    │       └── subscriptionApi.js
+    └── utils/          # helpers (cn, formatDate), toast wrapper
 ```
 
-## ⚙️ Setup Instructions
+## ⚙️ Local Setup
 
-### 1. Backend Setup
-1. Navigate to `backend/` folder.
-2. Install dependencies: `npm install`.
-3. Create a `.env` file based on your environment:
-   ```env
-   PORT=5000
-   DB_NAME=gym_db
-   DB_USER=postgres
-   DB_PASS=your_password
-   DB_HOST=localhost
-   JWT_SECRET=your_secret_key
-   ```
-4. Run the server: `npm run dev`. (Database will auto-seed with 20 dummy members on first run).
+### Backend
 
-### 2. Frontend Setup
-1. Navigate to `frontend/` folder.
-2. Install dependencies: `npm install`.
-3. Create a `.env` file:
-   ```env
-   VITE_API_URL=http://localhost:5000/api
-   ```
-4. Start development server: `npm run dev`.
+```bash
+cd backend
+npm install
+cp .env.example .env   # then edit values
+npm run dev
+```
 
-## 🚢 Deployment (Railway.app)
+Required env (see `backend/.env.example`):
 
-To deploy the database on Railway:
-1. Create a new PostgreSQL instance on Railway.
-2. Copy the `DATABASE_URL`.
-3. Set the environment variables in your Railway Backend service.
-4. Ensure `SSL` is enabled in Sequelize config for production.
+```env
+NODE_ENV=development
+PORT=5000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=gym_management
+
+JWT_SECRET=change-me
+JWT_EXPIRES_IN=1d
+
+ADMIN_NAME=Admin
+ADMIN_EMAIL=admin@gym.com
+ADMIN_PASSWORD=admin123
+```
+
+On first dev run the database is auto-synced and seeded (default admin, 3 plans, 20 members).
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+`.env`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+## 🚢 Production Deployment (Vercel + Railway)
+
+### Database (Railway)
+1. Create a PostgreSQL service.
+2. Copy the connection details (host, port, user, password, db name). Prefer the **pooler** endpoint over the direct one for serverless workloads.
+
+### Backend (Vercel)
+1. Set env vars in the Vercel project (Settings → Environment Variables):
+   - `NODE_ENV=production` *(required — enables SSL to Railway)*
+   - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+   - `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, etc.
+2. **First deploy only**: also set `DB_FORCE_INIT=true` so the function syncs the schema and seeds the admin/plans on first cold start. Remove (or set to `false`) afterwards — keeping it on adds seconds to every cold start.
+3. Re-set `DB_FORCE_INIT=true` whenever you change a model and want the live DB to re-sync, then unset it.
+
+### Frontend (Vercel)
+- `VITE_API_URL=https://<your-backend>.vercel.app/api`
+- [`frontend/vercel.json`](frontend/vercel.json) rewrites all routes to `index.html` so client-side routing works on hard reload.
+
+### Keep-warm (recommended)
+Vercel idles serverless functions after ~5–15 minutes, causing cold-start delays. The backend exposes a cheap, no-DB endpoint:
+
+```
+GET /health
+```
+
+Point a free uptime monitor (UptimeRobot, cron-job.org) at it on a 5-minute interval to keep the function warm. Real user requests stay fast.
+
+## 🔧 Performance Notes
+
+- **DB init is gated behind `NODE_ENV !== "production"` (or `DB_FORCE_INIT=true`)**. In production the cold-start path is just `connectDatabase()` — no sync, no seed checks. See [`backend/src/config/initDb.js`](backend/src/config/initDb.js).
+- **Sequelize pool tuned for serverless**: `max: 2, idle: 1000ms, evict: 1000ms` in production. See [`backend/src/config/db.js`](backend/src/config/db.js).
+- **CORS preflight cached for 24h** via `maxAge: 86400` so the browser doesn't OPTIONS-roundtrip before every API call.
+- **Search inputs are debounced** (500ms) using a shared `useDebouncedValue` hook.
+
+## 📜 API Surface (under `/api`)
+
+| Method | Path | Auth |
+|---|---|---|
+| POST | `/auth/login` | public |
+| GET / POST / PUT / DELETE | `/members[/:id]` | auth |
+| POST | `/attendance/check-in` | auth |
+| POST | `/attendance/mark-absent` | auth |
+| GET | `/attendance/report?month&year` | auth |
+| GET | `/plans` | auth |
+| POST | `/subscriptions/assign` | auth |
+| GET | `/subscriptions/member/:memberId/status` | auth |
+| GET | `/subscriptions/members?status=active|expired` | auth |
+| GET | `/dashboard/stats` | admin |
 
 ---
-Developed with ❤️ by Argon Team.
+Built with ❤️ by the Argon team.
