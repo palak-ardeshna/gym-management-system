@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { useLoginMutation } from '../../redux/api/authApi';
 import { setCredentials } from '../../redux/slices/authSlice';
 import { LogIn, Mail, Lock, Loader2 } from 'lucide-react';
+import { toast } from '../../utils/toast';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -29,13 +30,14 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const response = await login(data).unwrap();
-      dispatch(setCredentials({ 
-        user: response.data.user, 
-        token: response.data.token 
+      dispatch(setCredentials({
+        user: response.data.user,
+        token: response.data.token
       }));
+      toast.success(response?.message || 'Logged in successfully');
       navigate('/dashboard');
     } catch (err) {
-      console.error('Failed to login:', err);
+      toast.error(err?.data?.message || 'Invalid email or password');
     }
   };
 

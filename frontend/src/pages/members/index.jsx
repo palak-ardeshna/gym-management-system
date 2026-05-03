@@ -10,6 +10,7 @@ import MemberList from './MemberList';
 import MemberModal from './MemberModal';
 import ConfirmModal from '../../components/ConfirmModal';
 import PlanModal from '../../components/PlanModal';
+import { toast } from '../../utils/toast';
 
 const Members = () => {
   const [page, setPage] = useState(1);
@@ -43,12 +44,14 @@ const Members = () => {
     try {
       if (selectedMember?.id) {
         await updateMember({ id: selectedMember.id, ...data }).unwrap();
+        toast.success('Member updated successfully');
       } else {
         await addMember(data).unwrap();
+        toast.success('Member added successfully');
       }
       setIsModalOpen(false);
     } catch (err) {
-      console.error('Failed to save member:', err);
+      toast.error(err?.data?.message || 'Failed to save member');
     }
   };
 
@@ -61,10 +64,11 @@ const Members = () => {
     if (memberToDelete) {
       try {
         await deleteMember(memberToDelete.id).unwrap();
+        toast.success('Member deleted successfully');
         setIsConfirmOpen(false);
         setMemberToDelete(null);
       } catch (err) {
-        console.error('Failed to delete member:', err);
+        toast.error(err?.data?.message || 'Failed to delete member');
       }
     }
   };

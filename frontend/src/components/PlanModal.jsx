@@ -6,6 +6,7 @@ import { Save, Loader2, Calendar, CreditCard } from 'lucide-react';
 import { useAssignPlanMutation } from '../redux/api/subscriptionApi';
 import { useGetPlansQuery } from '../redux/api/planApi';
 import Modal from './Modal';
+import { toast } from '../utils/toast';
 
 const planSchema = z.object({
   memberId: z.number(),
@@ -82,10 +83,11 @@ const PlanModal = ({ isOpen, onClose, memberId, memberName, currentEndDate, isRe
 
   const onSubmit = async (data) => {
     try {
-      await assignPlan(data).unwrap();
+      const res = await assignPlan(data).unwrap();
+      toast.success(res?.message || (isRenewal ? 'Plan renewed successfully' : 'Plan assigned successfully'));
       onClose();
     } catch (err) {
-      console.error('Failed to assign plan:', err);
+      toast.error(err?.data?.message || (isRenewal ? 'Failed to renew plan' : 'Failed to assign plan'));
     }
   };
 
